@@ -1,0 +1,21 @@
+.topbar__container {
+    min-height: inherit;
+    position: absolute;
+    top: 0px;
+    max-height: 55px !important;
+    background: #ffffff;
+    min-width: 100vw;
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid rgb(236, 236, 236);
+  }
+  
+  .active {
+    background: #fff;
+    border-color: #8FD188;
+    color: #8FD188;
+    font-weight: 700;
+    border-width: 0 0 2px 0;
+    margin: 0 0 -2px 0;
+  }

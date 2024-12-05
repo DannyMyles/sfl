@@ -1,0 +1,9 @@
+<svg id="vuesax_bulk_trend-up" data-name="vuesax/bulk/trend-up" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <g id="trend-up">
+    <g id="trend-up-2" data-name="trend-up">
+      <path id="Vector" d="M14.19,0H5.81C2.17,0,0,2.17,0,5.81v8.37C0,17.83,2.17,20,5.81,20h8.37c3.64,0,5.81-2.17,5.81-5.81V5.81C20,2.17,17.83,0,14.19,0Z" transform="translate(2 2)" fill="#FBB536" opacity="0.4"/>
+      <path id="Vector-2" data-name="Vector" d="M9.7.43a.707.707,0,0,0-.38-.38A.751.751,0,0,0,9.063,0H7.2a.7.7,0,0,0-.7.7.7.7,0,0,0,.7.7h.18L5.272,3.51,4.253,1.99a.712.712,0,0,0-.51-.31.676.676,0,0,0-.56.2L.2,4.86a.706.706,0,0,0,0,.99.672.672,0,0,0,.49.2.7.7,0,0,0,.49-.2l2.38-2.38,1.02,1.52a.712.712,0,0,0,.51.31.676.676,0,0,0,.56-.2l2.72-2.72v.18a.7.7,0,1,0,1.4,0V.69A1.107,1.107,0,0,0,9.7.43Z" transform="translate(7.128 8.98)" fill="#FBB536"/>
+    </g>
+    <path id="Vector-3" data-name="Vector" d="M0,0H24V24H0Z" fill="none" opacity="0"/>
+  </g>
+</svg>
