@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getAllActivityLogs, getActivityLogById, createActivityLog } = require('../controllers/activityLogController');
+const { getAllActivityLogs, getActivityLogById, createActivityLog, deleteActivityLog } = require('../controllers/activityLogController');
 const { authenticateUser } = require('../middlewares/authMiddleware');
 
 // Protected routes for activity logs
@@ -9,6 +9,7 @@ router.route('/activity')
   .post(authenticateUser, createActivityLog); 
 
 router.route('/activity/:id')
-  .get(authenticateUser, getActivityLogById);
+  .get(authenticateUser, getActivityLogById)
+  .delete(authenticateUser, deleteActivityLog)
 
 module.exports = router;

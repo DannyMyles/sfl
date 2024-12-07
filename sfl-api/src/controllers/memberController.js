@@ -2,8 +2,7 @@ const { Member, User } = require("../models/associations");
 const asyncWrapper = require("../utils/asyncWrapper");
 const HTTP_STATUS_CODES = require("../utils/statusCodes");
 const path = require('path');
-const { v4: uuidv4 } = require("uuid");
-// Create a new member
+
 const createMember = asyncWrapper(async (req, res, next) => {
     const { name, email, roleId, dob, userId } = req.body;
 
@@ -13,28 +12,39 @@ const createMember = asyncWrapper(async (req, res, next) => {
         return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ error: "Invalid user ID" });
     }
 
-    const profilePicture = path.join('uploads', req.file.filename);
-    const newMember = await Member.create({
-        id: uuidv4(),
-        name,
-        email,
-        roleId,
-        dob,
-        userId,
-        profilePicture,
-    });
+    if (!req.file) {
+        return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ error: "No file uploaded" });
+    }
 
-    return res.status(HTTP_STATUS_CODES.CREATED).json(newMember);
+    const profilePicture = path.join('uploads', req.file.filename).replace(/\\/g, '/');
+
+    try {
+        const newMember = await Member.create({
+            name,
+            email,
+            roleId,
+            dob,
+            userId,
+            profilePicture,
+        });
+
+        return res.status(HTTP_STATUS_CODES.CREATED).json(newMember);
+    } catch (err) {
+        if (err.name === 'SequelizeValidationError') {
+            const errors = err.errors.map(error => error.message);
+            return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ errors });
+        }
+        next(err);
+    }
 });
 
 
-// Get all members
+
 const getAllMembers = asyncWrapper(async (req, res, next) => {
     const members = await Member.findAll();
     return res.status(HTTP_STATUS_CODES.OK).json(members);
 });
 
-// Get a member by ID
 const getMemberById = asyncWrapper(async (req, res, next) => {
     const member = await Member.findByPk(req.params.id);
     if (!member) {
@@ -43,7 +53,6 @@ const getMemberById = asyncWrapper(async (req, res, next) => {
     return res.status(HTTP_STATUS_CODES.OK).json(member);
 });
 
-// Update a member
 const updateMember = asyncWrapper(async (req, res, next) => {
     const member = await Member.findByPk(req.params.id);
     if (!member) {
@@ -54,7 +63,6 @@ const updateMember = asyncWrapper(async (req, res, next) => {
     return res.status(HTTP_STATUS_CODES.OK).json(member);
 });
 
-// Delete a member
 const deleteMember = asyncWrapper(async (req, res, next) => {
     const member = await Member.findByPk(req.params.id);
     if (!member) {

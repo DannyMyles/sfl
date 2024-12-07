@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 const asyncWrapper = require("../utils/asyncWrapper");
 const HTTP_STATUS_CODES = require("../utils/statusCodes");
 require('dotenv').config();
-const { v4: uuidv4 } = require("uuid");
 // Secret key for JWT
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || '@mu(H)adywawire199990wewire!';
 
@@ -14,56 +13,53 @@ const generateToken = (user) => {
 };
 
 // Register a new user
-const registerUser = asyncWrapper(async (req, res, next) => {
-    const { name, username, email, password, roleId } = req.body;
-
-    // Input validation
-    if (!name || !email || !password) {
-        return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({
-            error: "Name, email, and password are required.",
-        });
-    }
-
+const registerUser = async (req, res, next) => {
     try {
-        const existingUser = await User.findOne({ where: { email } });
-        if (existingUser) {
-            return res.status(HTTP_STATUS_CODES.CONFLICT).json({ error: "User already exists." });
-        }
+      const { name, username, email, password, roleId } = req.body;
+  
+      // Check if roleId exists
+      if (!roleId) {
+        return res.status(400).json({ message: "Role ID is required" });
+      }
+  
+      // Ensure the user does not already exist
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+  
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+  
+      // Create the user
+      const newUser = await User.create({
+        name,
+        username,
+        email,
+        password: hashedPassword,
+        roleId,
+      });
 
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Create new user
-        const newUser = await User.create({
-            id: uuidv4(), 
-            name,
-            username,
-            email,
-            password: hashedPassword,
-            roleId,
-        });
-
-        // Generate JWT token
-        const token = generateToken(newUser);
-
-        return res.status(HTTP_STATUS_CODES.CREATED).json({
-            message: "User registered successfully",
-            user: {
-                id: newUser.id,
-                name: newUser.name,
-                email: newUser.email,
-                roleId: newUser.roleId,
-            },
-            token,
-        });
+      const token = generateToken(newUser);
+  
+      res.status(201).json({
+        message: "User registered successfully",
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+        },
+        token
+      });
     } catch (error) {
-        console.error("Database error:", error.message, error.stack);
-        return res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            error: `Error registering user. Please try again later.`,
-        });
+      console.error("Error registering user:", error);
+      if (error.name === "SequelizeForeignKeyConstraintError") {
+        return res.status(400).json({ message: "Invalid Role ID provided" });
+      }
+      res.status(500).json({ message: "Internal server error" });
     }
-});
-
+  };
+  
 
 // Login a user
 const loginUser = asyncWrapper(async (req, res, next) => {

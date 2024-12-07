@@ -1,13 +1,11 @@
 const { ActivityLog } = require("../models/associations");
 const asyncWrapper = require("../utils/asyncWrapper");
 const HTTP_STATUS_CODES = require("../utils/statusCodes");
-const { v4: uuidv4 } = require("uuid");
 
 // Create a new activity log
 const createActivityLog = asyncWrapper(async (req, res, next) => {
     const { action, userId, timestamp } = req.body;
     const newActivityLog = await ActivityLog.create({
-        id: uuidv4(), // Generate a new UUID for the log
         action,
         userId,
         timestamp

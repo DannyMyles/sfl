@@ -5,9 +5,8 @@ const { authenticateUser } = require('../middlewares/authMiddleware');
 const upload = require('../utils/multerConfig');
 const multerErrorHandler = require('../middlewares/multerErrorHandler'); 
 
-// Protected routes for members
 router.route('/members')
-    .post(authenticateUser, upload.single('profilePicture'), createMember, multerErrorHandler)
+    .post(authenticateUser, upload.single('file'), createMember, multerErrorHandler)
     .get(authenticateUser, getAllMembers);
 
 router.route('/members/:id')

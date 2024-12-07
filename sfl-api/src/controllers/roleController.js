@@ -1,13 +1,10 @@
 const { Role } = require("../models/associations");
 const asyncWrapper = require("../utils/asyncWrapper");
 const HTTP_STATUS_CODES = require("../utils/statusCodes");
-const { v4: uuidv4 } = require("uuid");
-
 // Create a new role
 const createRole = asyncWrapper(async (req, res, next) => {
     const { name } = req.body;
     const newRole = await Role.create({
-        id: uuidv4(), // Generate a UUID for the role
         name
     });
     return res.status(HTTP_STATUS_CODES.CREATED).json(newRole);
