@@ -6,15 +6,15 @@ import TopBar from "./componets/topbar/topbar";
 function App() {
   return (
     <>
-      <div className="items-center navbar-header d-flex">
-        <div className="content__topBar">
-          <TopBar />
-        </div>
-      </div>
-      <div className="flex relative h-screen">
+      <div className="main__wrap overflow-hidden">
         <Sidebar />
-        <div className="flex-1 relative overflow-auto">
-          <Outlet />
+        <div >
+          <div className="content__topBar">
+            <TopBar />
+          </div>
+          <div className="flex-1 p-2 content__overflow_wrapper h-screen">
+            <div className="p-2 overflow-auto bg-white  rounded-xl"><Outlet /></div>
+          </div>
         </div>
       </div>
     </>

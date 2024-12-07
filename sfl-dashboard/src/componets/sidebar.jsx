@@ -17,7 +17,7 @@ const Sidebar = () => {
   if (!mounted) return null;
 
   return (
-    <div className="vertical-menu">
+    <div className="sidebar__wrap  border-r-2">
       <div className="drawer__header" style={{ height: 100 }}>
         <img
           loading="lazy"
