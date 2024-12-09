@@ -19,9 +19,12 @@ const createUser = asyncWrapper(async (req, res, next) => {
 
 // Get all users
 const getAllUsers = asyncWrapper(async (req, res, next) => {
-    const users = await User.findAll();
-    return res.status(HTTP_STATUS_CODES.OK).json(users); 
+    const users = await User.findAll({
+        order: [['createdAt', 'DESC']],
+    });
+    return res.status(HTTP_STATUS_CODES.OK).json(users);
 });
+
 
 // Get a single user by ID
 const getUserById = asyncWrapper(async (req, res, next) => {

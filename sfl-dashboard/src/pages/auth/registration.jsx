@@ -1,27 +1,27 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Toaster, toast } from "sonner";
-import { Calendar } from "primereact/calendar";
 import { Dropdown } from "primereact/dropdown";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { accReg } from "../../api/apiService";
+import { AuthContext } from "../../context/AuthContext";
 
 const Registration = () => {
+  const { login, error, loading } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    dateOfBirth: null,
+    username: "",
     role: null,
     password: "",
   });
 
-  const [loading, setLoading] = useState(false);
 
   const roles = [
-    { label: "Admin", value: "admin" },
-    { label: "User", value: "user" },
-    { label: "Guest", value: "guest" },
+    { label: "Admin", value: 1 },
+    { label: "User", value: 2 },
   ];
-
+  const navigate = useNavigate();
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData({ ...formData, [name]: value });
@@ -29,22 +29,24 @@ const Registration = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setLoading(true);
     try {
-      // Replace with actual registration logic
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success("Registration successful");
-      setFormData({
-        name: "",
-        email: "",
-        dateOfBirth: null,
-        role: null,
-        password: "",
-      });
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        username: formData.username, 
+        password: formData.password,
+        roleId: formData.role,
+      };
+
+      const resp = await accReg(payload);
+      const user = resp.data.user;
+      await login(user);
+      console.log("registration response: ", user);
+      toast.success("Registration successful!");
+      navigate("/sfl/dashboard");
     } catch (error) {
-      toast.error("Registration failed");
-    } finally {
-      setLoading(false);
+      console.error("Registration error:", error);
+      toast.error("An error occurred during registration");
     }
   };
 
@@ -72,7 +74,7 @@ const Registration = () => {
           <h1 className="text-[18px] mb-4">Register</h1>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <label className="flex flex-col gap-1">
-              <span className="text-sm font-medium">Name</span>
+              <span className="text-sm font-medium">Full Name</span>
               <input
                 type="text"
                 name="name"
@@ -84,6 +86,41 @@ const Registration = () => {
                 aria-label="Name"
               />
             </label>
+
+            <div className="flex justify-between gap-2">
+              <div className="w-1/2">
+                <label className="flex flex-col gap-1">
+                  <span className="text-sm font-medium">Username</span>
+                  <input
+                    type="text"
+                    name="username"
+                    placeholder="Username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    className="p-2 border-[#efefef] rounded-md my-2 outline-[#eeeeee] bg-[#e9eaeb]"
+                    required
+                    aria-label="Username"
+                  />
+                </label>
+              </div>
+
+              <div className="w-1/2">
+                <label className="flex flex-col gap-1">
+                  <span className="text-sm font-medium">Password</span>
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="p-2 border-[#efefef] rounded-md my-2 outline-[#eeeeee] bg-[#e9eaeb]"
+                    required
+                    aria-label="Password"
+                  />
+                </label>
+              </div>
+            </div>
+
             <div className="flex justify-between gap-2">
               <div className="w-1/2">
                 <label className="flex flex-col gap-1">
@@ -103,24 +140,6 @@ const Registration = () => {
 
               <div className="w-1/2">
                 <label className="flex flex-col gap-1">
-                  <span className="text-sm font-medium">Date of Birth</span>
-                  <Calendar
-                    value={formData.dateOfBirth}
-                    onChange={(e) =>
-                      setFormData({ ...formData, dateOfBirth: e.value })
-                    }
-                    dateFormat="mm/dd/yy"
-                    showIcon
-                    className="my-2"
-                    placeholder="Select Date"
-                  />
-                </label>
-              </div>
-            </div>
-
-            <div className="flex justify-between gap-2">
-              <div className="w-1/2">
-                <label className="flex flex-col gap-1">
                   <span className="text-sm font-medium">Role</span>
                   <Dropdown
                     value={formData.role}
@@ -133,23 +152,7 @@ const Registration = () => {
                   />
                 </label>
               </div>
-              <div className="w-1/2">
-                <label className="flex flex-col gap-1">
-                  <span className="text-sm font-medium">Password</span>
-                  <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="p-2 border-[#efefef] rounded-md my-2 outline-[#eeeeee] bg-[#e9eaeb]"
-                    required
-                    aria-label="Password"
-                  />
-                </label>
-              </div>
             </div>
-
             <button
               type="submit"
               className="p-2 bg-[#248E1D] text-white rounded"

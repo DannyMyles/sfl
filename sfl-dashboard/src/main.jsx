@@ -7,11 +7,12 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import Login from './pages/auth/Login.jsx'
 import Registration from './pages/auth/registration.jsx'
-import { AuthProvider } from "./context/useAuthContext.jsx";
 import ProtectedRoute from "./context/protectedRoutes.jsx";
 import App from "./App.jsx";
 import Users from "./pages/users.jsx";
 import Dashboard from "./pages/dashboard.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
+import Members from "./pages/members.jsx";
 
 const router = createBrowserRouter([
   {
@@ -32,9 +33,11 @@ const router = createBrowserRouter([
     children: [
       { path: "dashboard", element: <Dashboard /> },
       { path: "users", element: <Users /> },
+      { path: "members", element: <Members /> },
     ],
   },
 ]);
+
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

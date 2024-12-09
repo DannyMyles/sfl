@@ -1,12 +1,11 @@
 import React, { useState, useContext } from "react";
 import { Dialog } from "primereact/dialog";
-import { useAuthContext } from "../context/useAuthContext";
 import { toast } from "sonner";
+import { AuthContext } from "../context/AuthContext";
 const Profile = ({ dialogVisible, hideDialog }) => {
-  const { user, updateUserProfile } = useContext(useAuthContext);
+  const { user, updateUserProfile } = useContext(AuthContext);
   const [updatedProfile, setUpdatedProfile] = useState({
-    firstName: user?.firstName || "",
-    lastName: user?.lastName || "",
+    firstName: user?.name || "",
     email: user?.email || "",
     profilePicture: user?.profilePicture || "",
   });
@@ -54,86 +53,59 @@ const Profile = ({ dialogVisible, hideDialog }) => {
       <div className="flex flex-col">
         <div className="flex flex-col justify-center p-2">
           <div className="justify-start px-3 text-sm">
-            <div className="flex justify-between gap-2">
-              <div className="w-1/2">
-                <label
-                  htmlFor="firstName"
-                  className="text-left text-xs font-medium text-gray-600"
-                >
-                  First Name
-                </label>
-                <input
-                  id="firstName"
-                  name="firstName"
-                  value={updatedProfile.firstName}
-                  onChange={handleInputChange}
-                  type="text"
-                  className="w-full px-3 py-2 border-[#efefef] rounded-md my-4 outline-[#eeeeee] bg-[#e9eaeb]"
-                  placeholder="Enter first name"
-                />
-              </div>
-              <div className="w-1/2">
-                <label
-                  htmlFor="lastName"
-                  className="text-left text-xs font-medium text-gray-600"
-                >
-                  Last Name
-                </label>
-                <input
-                  id="lastName"
-                  name="lastName"
-                  value={updatedProfile.lastName}
-                  onChange={handleInputChange}
-                  type="text"
-                  className="w-full px-3 py-2 border-[#efefef] rounded-md my-4 outline-[#eeeeee] bg-[#e9eaeb]"
-                  placeholder="Enter last name"
-                />
-              </div>
-            </div>
+            <label
+              htmlFor="firstName"
+              className="text-left text-xs font-medium text-gray-600"
+            >
+              Full Name
+            </label>
+            <input
+              id="firstName"
+              name="firstName"
+              value={updatedProfile.firstName}
+              onChange={handleInputChange}
+              type="text"
+              className="w-full px-3 py-2 border-[#efefef] rounded-md my-4 outline-[#eeeeee] bg-[#e9eaeb]"
+              placeholder="Enter first name"
+            />
 
-            <div className="flex justify-between gap-2">
-              <div className="w-1/2">
-                <label
-                  htmlFor="email"
-                  className="text-left text-xs font-medium text-gray-600"
-                >
-                  Email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  value={updatedProfile.email}
-                  onChange={handleInputChange}
-                  type="email"
-                  className="w-full px-3 py-2 border-[#efefef] rounded-md my-4 outline-[#eeeeee] bg-[#e9eaeb]"
-                  placeholder="Enter email"
+            <label
+              htmlFor="email"
+              className="text-left text-xs font-medium text-gray-600"
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              value={updatedProfile.email}
+              onChange={handleInputChange}
+              type="email"
+              className="w-full px-3 py-2 border-[#efefef] rounded-md my-4 outline-[#eeeeee] bg-[#e9eaeb]"
+              placeholder="Enter email"
+            />
+            <label
+              htmlFor="profilePicture"
+              className="text-left text-xs font-medium text-gray-600"
+            >
+              Profile Picture
+            </label>
+            <input
+              type="file"
+              id="profilePicture"
+              name="profilePicture"
+              onChange={handleProfilePictureChange}
+              className="w-full px-3 py-2 border-[#efefef] rounded-md my-4 outline-[#eeeeee] bg-[#e9eaeb]"
+            />
+            {updatedProfile.profilePicture && (
+              <div className="flex justify-center mt-4">
+                <img
+                  src={updatedProfile.profilePicture}
+                  alt="Profile Preview"
+                  className="h-32 w-32 rounded-full object-cover"
                 />
               </div>
-              <div className="w-1/2">
-                <label
-                  htmlFor="profilePicture"
-                  className="text-left text-xs font-medium text-gray-600"
-                >
-                  Profile Picture
-                </label>
-                <input
-                  type="file"
-                  id="profilePicture"
-                  name="profilePicture"
-                  onChange={handleProfilePictureChange}
-                  className="w-full px-3 py-2 border-[#efefef] rounded-md my-4 outline-[#eeeeee] bg-[#e9eaeb]"
-                />
-                {updatedProfile.profilePicture && (
-                  <div className="flex justify-center mt-4">
-                    <img
-                      src={updatedProfile.profilePicture}
-                      alt="Profile Preview"
-                      className="h-32 w-32 rounded-full object-cover"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

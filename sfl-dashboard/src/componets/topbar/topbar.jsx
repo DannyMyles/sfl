@@ -4,14 +4,15 @@ import { Button } from "primereact/button";
 import { CiLogout } from "react-icons/ci";
 import { toast, Toaster } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { useAuthContext } from "../../context/useAuthContext";
 import Profile from "../Profile";
+import { AuthContext } from "../../context/AuthContext";
 
 const TopBar = () => {
   const navigate = useNavigate();
-  const { user, logout } = useContext(useAuthContext);
+  const { user, logout } = useContext(AuthContext);
   const [profileOpen, setProfileOpen] = useState(false);
 
+  console.log("userr in topbar ->>>>>>", user)
   const goToSetting = () => {
     console.log("Go to Settings");
     navigate("/settings");
@@ -48,7 +49,7 @@ const TopBar = () => {
             alt="User Avatar"
           />
           <p className="text-[11px] text-nowrap md:text-sm font-normal text-[#000027] hidden md:block">
-            {user ? user.lastName : "Guest"}
+            {user ? user.name : "Guest"}
           </p>
         </button>
 

@@ -16,7 +16,8 @@ const createMember = asyncWrapper(async (req, res, next) => {
         return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ error: "No file uploaded" });
     }
 
-    const profilePicture = path.join('uploads', req.file.filename).replace(/\\/g, '/');
+    // Save the public URL for the uploaded file
+    const profilePicture = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
 
     try {
         const newMember = await Member.create({
@@ -38,10 +39,10 @@ const createMember = asyncWrapper(async (req, res, next) => {
     }
 });
 
-
-
 const getAllMembers = asyncWrapper(async (req, res, next) => {
-    const members = await Member.findAll();
+    const members = await Member.findAll({
+        order: [['createdAt', 'DESC']],
+    });
     return res.status(HTTP_STATUS_CODES.OK).json(members);
 });
 

@@ -1,35 +1,46 @@
 import React, { useContext, useState } from "react";
 import { Toaster, toast } from "sonner";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { useAuthContext } from "../../context/useAuthContext";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
+import { accLogin } from "../../api/apiService";
+
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
-    passcode: "",
+    password: "",
   });
+
   const navigate = useNavigate();
-  const { login, error, loading } = useContext(useAuthContext);
+  const { login, error, loading } = useContext(AuthContext);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // const handleSubmit = async (event) => {
-  //   event.preventDefault();
-  //   try {
-  //     await login(formData.email, formData.passcode);
-  //   } catch (error) {
-  //     toast.error("Invalid email or password");
-  //   }
-  // };
-
-  const handleLogin = () =>{
-    navigate('/sfl')
   
-  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const payload = {
+        email: formData.email,
+        password: formData.password,
+      };
+  
+      const resp = await accLogin(payload); 
+      const user = resp.data.user;
+      const res = await login(user);
+      console.log("login response: ", res);
+      toast.success("Login successful!");
+      navigate("/sfl/dashboard");
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("Invalid email or password");
+    }
+  };
+  
 
   return (
     <div className="flex flex-col md:flex-row h-screen">
@@ -37,8 +48,9 @@ const Login = () => {
       <div className="relative flex-1 flex items-center justify-center">
         <div className="absolute inset-0 bg-black opacity-70"></div>
 
+        {/* Use correct path for the image */}
         <img
-          src="/src/assets/sfl1e.jpg"
+          src="/src/assets/sfl1e.jpg" 
           alt="sfl"
           className="w-full h-full object-contain"
         />
@@ -53,7 +65,7 @@ const Login = () => {
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <h1 className="text-[18px] mb-4">Login</h1>
-          <form className="flex flex-col gap-4">
+          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <label className="flex flex-col gap-1">
               <span className="text-sm font-medium">Email</span>
               <input
@@ -71,9 +83,9 @@ const Login = () => {
               <span className="text-sm font-medium">Password</span>
               <input
                 type="password"
-                name="passcode"
+                name="password"
                 placeholder="Password"
-                value={formData.passcode}
+                value={formData.password}
                 onChange={handleChange}
                 className="p-2 border border-[#efefef] rounded-md my-4 outline-[#eeeeee] bg-[#e9eaeb]"
                 required
@@ -83,12 +95,11 @@ const Login = () => {
             {error && <p className="text-red-500">{error}</p>}
             <button
               type="submit"
-              className="p-2 bg-[#248E1D] text-white rounded"
+              className="p-2 bg-[#248E1D] text-white rounded flex justify-center items-center"
               disabled={loading}
-              onClick={handleLogin}
             >
               {loading ? (
-                <AiOutlineLoading3Quarters className="animate-spin h-5 w-5 mr-3 flex justify-center items-center" />
+                <AiOutlineLoading3Quarters className="animate-spin h-5 w-5" />
               ) : (
                 "Login"
               )}

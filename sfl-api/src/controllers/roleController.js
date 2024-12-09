@@ -11,7 +11,9 @@ const createRole = asyncWrapper(async (req, res, next) => {
 });
 // Get all roles
 const getAllRoles = asyncWrapper(async (req, res, next) => {
-    const roles = await Role.findAll();
+    const roles = await Role.findAll({
+        order: [['createdAt', 'DESC']],
+    });
     return res.status(HTTP_STATUS_CODES.OK).json(roles);
 });
 

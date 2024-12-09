@@ -8,56 +8,23 @@ export function getAuthToken() {
 
 // Define all Axios clients with different base URLs
 const baseAxiosClient = axios.create({
-  baseURL: import.meta.env.VITE_USER_MANAGEMENT_URL,
+  baseURL: import.meta.env.VITE_BASE_URL,
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
   },
 });
 
-const registrationAxiosClient = axios.create({
-  baseURL: import.meta.env.VITE_USER_MANAGEMENT_URL,
-  headers: {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
+// Add a request interceptor to dynamically set the Authorization header
+baseAxiosClient.interceptors.request.use(
+  (config) => {
+    const token = getAuthToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
   },
-});
+  (error) => Promise.reject(error)
+);
 
-const authAxiosClient = axios.create({
-  baseURL: import.meta.env.VITE_USER_MANAGEMENT_URL,
-  headers: {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-  },
-});
-
-// Array of all clients to add the interceptor to
-const clients = [
-  baseAxiosClient,
-  registrationAxiosClient,
-  authAxiosClient,
-];
-
-// Add a request interceptor to each client to dynamically set the Authorization header
-clients.forEach(client => {
-  client.interceptors.request.use(
-    config => {
-      const token = getAuthToken();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    error => Promise.reject(error)
-  );
-});
-
-// Export all clients for use in other parts of the application
-export {
-  baseAxiosClient,
-  registrationAxiosClient,
-  authAxiosClient,
-};
+export { baseAxiosClient };

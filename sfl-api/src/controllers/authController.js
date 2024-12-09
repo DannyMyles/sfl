@@ -14,75 +14,93 @@ const generateToken = (user) => {
 
 // Register a new user
 const registerUser = async (req, res, next) => {
-    try {
+  try {
       const { name, username, email, password, roleId } = req.body;
-  
-      // Check if roleId exists
-      if (!roleId) {
-        return res.status(400).json({ message: "Role ID is required" });
+
+      // Check if required fields are present
+      if (!name || !username || !email || !password || !roleId) {
+          return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ message: "All fields are required" });
       }
-  
-      // Ensure the user does not already exist
+
+      // Check if email or username already exists
       const existingUser = await User.findOne({ where: { email } });
       if (existingUser) {
-        return res.status(400).json({ message: "User already exists" });
+          return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ message: "User with this email already exists" });
       }
-  
+
+      const existingUsername = await User.findOne({ where: { username } });
+      if (existingUsername) {
+          return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ message: "Username is already taken" });
+      }
+
       // Hash the password
       const hashedPassword = await bcrypt.hash(password, 10);
-  
+
       // Create the user
       const newUser = await User.create({
-        name,
-        username,
-        email,
-        password: hashedPassword,
-        roleId,
+          name,
+          username,
+          email,
+          password: hashedPassword,
+          roleId,
       });
 
+      // Fetch the role details
+      const userWithRole = await User.findByPk(newUser.id, { include: 'Role' });
+
       const token = generateToken(newUser);
-  
-      res.status(201).json({
-        message: "User registered successfully",
-        user: {
-          id: newUser.id,
-          name: newUser.name,
-          email: newUser.email,
-        },
-        token
+
+      return res.status(HTTP_STATUS_CODES.CREATED).json({
+          message: "User registered successfully",
+          user: {
+              id: userWithRole.id,
+              name: userWithRole.name,
+              email: userWithRole.email,
+              role: userWithRole.Role.name,
+              token: token,
+          },
       });
-    } catch (error) {
+  } catch (error) {
       console.error("Error registering user:", error);
       if (error.name === "SequelizeForeignKeyConstraintError") {
-        return res.status(400).json({ message: "Invalid Role ID provided" });
+          return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ message: "Invalid Role ID provided" });
       }
-      res.status(500).json({ message: "Internal server error" });
-    }
-  };
-  
+      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: "Internal server error" });
+  }
+};
 
 // Login a user
 const loginUser = asyncWrapper(async (req, res, next) => {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
-        return res.status(HTTP_STATUS_CODES.NOT_FOUND).json({ error: "User not found" });
-    }
+  // Check if email and password are provided
+  if (!email || !password) {
+      return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ error: "Email and Password are required" });
+  }
 
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    if (!isPasswordCorrect) {
-        return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({ error: "Invalid credentials" });
-    }
+  const user = await User.findOne({ where: { email }, include: 'Role' });
+  if (!user) {
+      return res.status(HTTP_STATUS_CODES.NOT_FOUND).json({ error: "User not found" });
+  }
 
-    // Generate JWT token
-    const token = generateToken(user);
+  const isPasswordCorrect = await bcrypt.compare(password, user.password);
+  if (!isPasswordCorrect) {
+      return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({ error: "Invalid credentials" });
+  }
 
-    return res.status(HTTP_STATUS_CODES.OK).json({
-        message: "Login successful",
-        user: { id: user.id, name: user.name, email: user.email },
-        token,
-    });
+  // Generate JWT token
+  const token = generateToken(user);
+
+  return res.status(HTTP_STATUS_CODES.OK).json({
+      message: "Login successful",
+      user: { 
+          id: user.id, 
+          name: user.name, 
+          email: user.email, 
+          role: user.Role.name,
+          token: token,
+      },
+  });
 });
 
 // Logout a user (Invalidate token)
@@ -92,23 +110,28 @@ const logoutUser = asyncWrapper(async (req, res, next) => {
 
 // Get current user details (requires authentication)
 const getCurrentUser = asyncWrapper(async (req, res, next) => {
-    const userId = req.userId;
+  const userId = req.userId;
 
-    if (!userId) {
-        return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ error: "User ID not found in request" });
-    }
+  if (!userId) {
+      return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ error: "User ID not found in request" });
+  }
 
-    try {
-        const user = await User.findByPk(userId);
-        if (!user) {
-            return res.status(HTTP_STATUS_CODES.NOT_FOUND).json({ error: "User not found" });
-        }
+  try {
+      const user = await User.findByPk(userId, { include: 'Role' });
+      if (!user) {
+          return res.status(HTTP_STATUS_CODES.NOT_FOUND).json({ error: "User not found" });
+      }
 
-        return res.status(HTTP_STATUS_CODES.OK).json(user);
-    } catch (error) {
-        console.error('Error fetching current user:', error);
-        return res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: "An error occurred while fetching user details" });
-    }
+      return res.status(HTTP_STATUS_CODES.OK).json({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.Role.name,
+      });
+  } catch (error) {
+      console.error('Error fetching current user:', error);
+      return res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: "An error occurred while fetching user details" });
+  }
 });
 
 module.exports = {

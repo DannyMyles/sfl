@@ -1,29 +1,29 @@
 import React, { useContext, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuthContext } from "./useAuthContext";
+import { AuthContext } from "./AuthContext";
 
 const ProtectedRoute = ({ children }) => {
-  const { user } = useContext(useAuthContext);
+  const { user } = useContext(AuthContext);
   const location = useLocation();
 
-  const adminRoutes = ["/users"];
+  const adminRoutes = ["/admin"];
 
-  const customerRoutes = ["/customer-home"];
+  const userRoutes = ["/users"];
 
   useEffect(() => {
     if (user) {
-      const { role } = user.data.role;
-
-      if (role === "ADMIN" && customerRoutes.includes(location.pathname)) {
+      const role = user.role
+  
+      if (role === "Admin" && userRoutes.includes(location.pathname)) {
         return <Navigate to="/" replace />;
       }
-
-      if (role === "CUSTOMER" && adminRoutes.includes(location.pathname)) {
-        return <Navigate to="/customer-home" replace />;
+  
+      if (role === "User" && adminRoutes.includes(location.pathname)) {
+        return <Navigate to="/users" replace />;
       }
     }
   }, [location.pathname, user]);
-
+  
   if (!user) {
     return <Navigate to="/login" />;
   }

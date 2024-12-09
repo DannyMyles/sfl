@@ -15,7 +15,9 @@ const createActivityLog = asyncWrapper(async (req, res, next) => {
 
 // Get all activity logs
 const getAllActivityLogs = asyncWrapper(async (req, res, next) => {
-    const activityLogs = await ActivityLog.findAll();
+    const activityLogs = await ActivityLog.findAll({
+        order: [['createdAt', 'DESC']],
+    });
     return res.status(HTTP_STATUS_CODES.OK).json(activityLogs);
 });
 

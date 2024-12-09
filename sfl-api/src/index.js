@@ -10,14 +10,19 @@ const activityLogsRoutes = require("./routes/activityLogsRoutes");
 const authRoutes = require("./routes/authRoutes");
 const seedDatabase = require("./seeders/seed");
 const path = require('path');
-
+const fs = require('fs');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(morgan("dev"));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+const uploadDir = path.join(__dirname, '..' ,'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
+app.use('/uploads', express.static(uploadDir));
 
 
 const port = process.env.PORT || 5000;
@@ -26,7 +31,7 @@ app.get("/", (req, res) => {
 });
 
 // Register routes
-app.use("/api/v1", authRoutes);
+app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1", rolesRoutes);
 app.use("/api/v1", membersRoutes);
 app.use("/api/v1", usersRoutes);
