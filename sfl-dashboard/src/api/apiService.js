@@ -109,8 +109,6 @@ export const updateMember = async (userId, data) => {
   }
 }
 
-
-
 export const deleteMember = async (memberId) => {
   try {
     if (!memberId) {
@@ -133,6 +131,32 @@ export const getRoles = async () => {
     const response = await baseAxiosClient.get("/roles");
     return response;
   } catch (error) {
+    throw error;
+  }
+};
+
+
+// Log Management Handlers
+
+export const getAllActivityLog= async () => {
+  try {
+    const response = await baseAxiosClient.get("/activity");
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteActivityLog = async (actId) => {
+  try {
+    if (!actId) {
+      throw new Error("Activity ID is required to delete a activity.");
+    }
+    
+    const response = await baseAxiosClient.delete(`/activity/${actId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting member:", error?.response?.data || error.message);
     throw error;
   }
 };

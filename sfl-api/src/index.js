@@ -11,6 +11,7 @@ const authRoutes = require("./routes/authRoutes");
 const seedDatabase = require("./seeders/seed");
 const path = require('path');
 const fs = require('fs');
+const HTTP_STATUS_CODES = require("./utils/statusCodes");
 
 const app = express();
 app.use(express.json());
@@ -36,6 +37,11 @@ app.use("/api/v1", rolesRoutes);
 app.use("/api/v1", membersRoutes);
 app.use("/api/v1", usersRoutes);
 app.use("/api/v1", activityLogsRoutes);
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: "Something went wrong!" });
+});
 
 const server = async () => {
   try {

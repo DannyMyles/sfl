@@ -9,18 +9,15 @@ const createMember = asyncWrapper(async (req, res, next) => {
     const { name, email, roleId, dob, userId } = req.body;
 
     try {
-        // Check if the user exists
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ error: "Invalid user ID" });
         }
 
-        // Check if file is uploaded
         if (!req.file) {
             return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ error: "No file uploaded" });
         }
 
-        // Save the public URL for the uploaded file
         const profilePicture = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
 
         const newMember = await Member.create({
@@ -31,6 +28,10 @@ const createMember = asyncWrapper(async (req, res, next) => {
             userId,
             profilePicture,
         });
+
+        // Log activity for creating member
+        req.body.action = 'Created member'; 
+        next();
 
         return res.status(HTTP_STATUS_CODES.CREATED).json(newMember);
     } catch (err) {
@@ -54,19 +55,6 @@ const getAllMembers = asyncWrapper(async (req, res, next) => {
     }
 });
 
-// Get a member by ID
-const getMemberById = asyncWrapper(async (req, res, next) => {
-    try {
-        const member = await Member.findByPk(req.params.id);
-        if (!member) {
-            return res.status(HTTP_STATUS_CODES.NOT_FOUND).json({ error: "Member not found" });
-        }
-        return res.status(HTTP_STATUS_CODES.OK).json(member);
-    } catch (err) {
-        next(err);
-    }
-});
-
 // Update a member
 const updateMember = asyncWrapper(async (req, res, next) => {
     const member = await Member.findByPk(req.params.id);
@@ -78,7 +66,6 @@ const updateMember = asyncWrapper(async (req, res, next) => {
     let profilePicture = member.profilePicture;
 
     try {
-        // If a new file is uploaded, delete the old file
         if (req.file) {
             const oldFilePath = path.join(__dirname, '..', 'uploads', path.basename(member.profilePicture));
             if (fs.existsSync(oldFilePath)) {
@@ -95,6 +82,9 @@ const updateMember = asyncWrapper(async (req, res, next) => {
             profilePicture,
         });
 
+        req.body.action = 'Updated member'; 
+        next();
+
         return res.status(HTTP_STATUS_CODES.OK).json(member);
     } catch (err) {
         if (err.name === 'SequelizeValidationError') {
@@ -108,21 +98,33 @@ const updateMember = asyncWrapper(async (req, res, next) => {
 // Delete a member
 const deleteMember = asyncWrapper(async (req, res, next) => {
     try {
+        console.log("Deleting member with ID:", req.params.id);
         const member = await Member.findByPk(req.params.id);
+
         if (!member) {
+            console.log("Member not found");
             return res.status(HTTP_STATUS_CODES.NOT_FOUND).json({ error: "Member not found" });
         }
+
+        // Proceed with deletion
         await member.destroy();
+
+        console.log("Member deleted successfully");
+        
+        req.body.action = 'Deleted member';
+        next(); 
+        // Send the response after the deletion is completed
         return res.status(HTTP_STATUS_CODES.OK).json({ message: "Member deleted successfully" });
     } catch (err) {
+        console.error("Error deleting member:", err);
         next(err);
     }
 });
 
+
 module.exports = {
     createMember,
     getAllMembers,
-    getMemberById,
     updateMember,
     deleteMember,
 };

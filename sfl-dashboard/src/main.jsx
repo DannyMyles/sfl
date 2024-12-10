@@ -14,6 +14,7 @@ import Users from "./pages/users.jsx";
 import Dashboard from "./pages/dashboard.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import Members from "./pages/members.jsx";
+import ActivityLogs from "./pages/activityLogs.jsx";
 
 const router = createBrowserRouter([
   {
@@ -35,6 +36,7 @@ const router = createBrowserRouter([
       { path: "dashboard", element: <Dashboard /> },
       { path: "users", element: <Users /> },
       { path: "members", element: <Members /> },
+      { path: "activities", element: <ActivityLogs /> },
     ],
   },
 ]);

@@ -2,17 +2,14 @@ const { ActivityLog } = require("../models/associations");
 const asyncWrapper = require("../utils/asyncWrapper");
 const HTTP_STATUS_CODES = require("../utils/statusCodes");
 
-// Create a new activity log
 const createActivityLog = asyncWrapper(async (req, res, next) => {
     try {
         const { action, userId, timestamp } = req.body;
 
-        // Check if required fields are present
         if (!action || !userId || !timestamp) {
             return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ error: "Action, userId, and timestamp are required" });
         }
 
-        // Create the activity log
         const newActivityLog = await ActivityLog.create({
             action,
             userId,
@@ -21,9 +18,10 @@ const createActivityLog = asyncWrapper(async (req, res, next) => {
         return res.status(HTTP_STATUS_CODES.CREATED).json(newActivityLog);
     } catch (error) {
         console.error("Error creating activity log:", error);
-        return res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: "Failed to create activity log" });
+        next(error); 
     }
 });
+
 
 // Get all activity logs
 const getAllActivityLogs = asyncWrapper(async (req, res, next) => {

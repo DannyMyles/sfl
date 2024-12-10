@@ -1,6 +1,7 @@
 import { TbUsersPlus } from "react-icons/tb";
 import { MdDashboard } from "react-icons/md";
 import { BsPeople } from "react-icons/bs";
+import { FiActivity } from "react-icons/fi";
 
 export const routes = [
   {
@@ -25,6 +26,14 @@ export const routes = [
     route: "/sfl/members",
     key: "members",
     icon: BsPeople,
+    permissions: ["read", "write"],
+  },
+  {
+    title: "Activity Logs",
+    color: '#4094AB',
+    route: "/sfl/activities",
+    key: "members",
+    icon: FiActivity,
     permissions: ["read", "write"],
   }
 ];

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import Search from "../componets/Search";
-import { createUser, getAllusers } from "../api/apiService";
+import { getAllusers } from "../api/apiService";
 import { formatDate } from "../utils/dateFormat";
 
 const roleMapping = {
@@ -12,21 +12,7 @@ const roleMapping = {
 
 const Users = () => {
   const [users, setUsers] = useState([]);
-  const [dialogVisible, setDialogVisible] = useState(false);
-  const [newUser, setNewUser] = useState({
-    name: "",
-    username: "",
-    dob: null,
-    email: "",
-    roleId: null,
-  });
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Role options for the dropdown
-  const roleOptions = [
-    { label: "Admin", value: 1 },
-    { label: "User", value: 2 },
-  ];
 
   const fetchUsers = async () => {
     try {
@@ -38,58 +24,6 @@ const Users = () => {
       setUsers(fetchedUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
-    }
-  };
-
-  // Open dialog
-  const showDialog = () => {
-    setDialogVisible(true);
-  };
-
-  // Close dialog
-  const hideDialog = () => {
-    setDialogVisible(false);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-
-    setNewUser({ ...newUser, [name]: value });
-  };
-
-  const handleCreateUser = async () => {
-    try {
-      const userPayload = {
-        name: newUser.name.trim(),
-        username: newUser.username.trim(),
-        email: newUser.email,
-        roleId: newUser.roleId,
-        dob: newUser.dob ? newUser.dob.toISOString() : null,
-      };
-
-      if (
-        !userPayload.name ||
-        !userPayload.username ||
-        !userPayload.email ||
-        !userPayload.roleId
-      ) {
-        console.error("Please fill in all required fields.");
-        return;
-      }
-
-      const resp = await createUser(userPayload);
-
-      if (resp && resp.data) {
-        setUsers([
-          ...users,
-          { ...userPayload, role: roleMapping[userPayload.roleId] },
-        ]);
-        hideDialog();
-      } else {
-        console.error("User creation failed. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error creating user:", error);
     }
   };
 
@@ -142,7 +76,6 @@ const Users = () => {
           <Column
             field="createdAt"
             header="Created Date"
-            sortable 
             body={(rowData) => formatDate(rowData.createdAt)}
           />
         </DataTable>
