@@ -19,8 +19,6 @@ const Login = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
@@ -30,17 +28,23 @@ const Login = () => {
       };
   
       const resp = await accLogin(payload); 
-      const user = resp.data.user;
-      const res = await login(user);
-      console.log("login response: ", res);
-      toast.success("Login successful!");
-      navigate("/sfl/dashboard");
+      console.log("login response: ", resp.data.message);
+      toast.success(resp.data.message);
+
+      if (resp?.data?.user) {
+        const user = resp.data.user;
+        await login(user);
+        navigate("/sfl/dashboard");
+      } else {
+        toast.error(resp?.data?.error || "An unexpected error occurred.");
+      }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Invalid email or password");
+
+      const errorMessage = error?.response?.data?.error || "An error occurred during login.";
+      toast.error(errorMessage);
     }
   };
-  
 
   return (
     <div className="flex flex-col md:flex-row h-screen">

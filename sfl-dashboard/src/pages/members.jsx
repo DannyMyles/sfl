@@ -6,25 +6,35 @@ import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { Calendar } from "primereact/calendar";
 import Search from "../componets/Search";
-import { createMember, getAllMembers, getRoles } from "../api/apiService";
+import {
+  createMember,
+  deleteMember,
+  getAllMembers,
+  getRoles,
+  updateMember,
+} from "../api/apiService";
 import { formatDate } from "../utils/dateFormat";
 import { Toaster, toast } from "sonner";
 import { AuthContext } from "../context/AuthContext";
+import { GoPencil } from "react-icons/go";
+import { FaTrash } from "react-icons/fa6";
 
 const Members = () => {
   const { user } = useContext(AuthContext);
-
+  const [isEdit, setIsEdit] = useState(false);
+  const [currentMember, setCurrentMember] = useState(null);
   const [members, setMembers] = useState([]);
   const [roles, setRoles] = useState([]);
-  const [dialogVisible, setDialogVisible] = useState(false);
+  const [isDialogVisible, setDialogVisible] = useState(false);
   const [newMember, setNewMember] = useState({
     name: "",
     email: "",
     dob: "",
     profilePicture: "",
-    roleId: null,
+    roleId: "",
   });
 
+  const [searchTerm, setSearchTerm] = useState("");
   const userId = user.id;
 
   const fetchMembers = async () => {
@@ -45,8 +55,28 @@ const Members = () => {
     }
   };
 
-  const showDialog = () => {
+  const showDialog = (actionType = "create", member = null) => {
     setDialogVisible(true);
+    setIsEdit(actionType === "edit");
+
+    if (actionType === "edit" && member) {
+      setCurrentMember(member);
+      setNewMember({
+        name: member.name || "",
+        email: member.email || "",
+        roleId: member.roleId === 1 ? "admin" : "user",
+        dob: member.dob ? formatDate(member.dob) : "",
+        profilePicture: member.profilePicture,
+      });
+    } else {
+      setNewMember({
+        name: "",
+        email: "",
+        roleId: null,
+        dob: "",
+        profilePicture: null,
+      });
+    }
   };
 
   const hideDialog = () => {
@@ -76,7 +106,7 @@ const Members = () => {
     setNewMember({ ...newMember, roleId: e.value });
   };
 
-  const handleCreateMember = async () => {
+  const handleSaveMember = async () => {
     const { name, email, roleId, dob, profilePicture } = newMember;
 
     if (!name || !email || !roleId || !dob || !profilePicture) {
@@ -90,27 +120,71 @@ const Members = () => {
     formData.append("roleId", roleId);
     formData.append("dob", dob);
     formData.append("userId", userId);
-    formData.append("file", profilePicture);
+
+    if (profilePicture && typeof profilePicture === "object") {
+      formData.append("file", profilePicture);
+    } else if (!profilePicture) {
+      formData.append("file", "");
+    }
 
     try {
-      const response = await createMember(formData);
-
-      if (response.status === 201) {
-        setMembers([...members, response.data]);
-        toast.success("Member created successfully!");
-        hideDialog();
+      if (isEdit && currentMember) {
+        const response = await updateMember(currentMember.id, formData);
+        console.log("Updated member response:", response);
+        if (response.status === 200) {
+          setMembers((prev) =>
+            prev.map((m) => (m.id === currentMember.id ? response.data : m))
+          );
+          toast.success(`${newMember.name} updated successfully!`);
+        }
       } else {
-        toast.error("Failed to create member.");
+        const response = await createMember(formData);
+        if (response.status === 201) {
+          setMembers([...members, response.data]);
+          toast.success(`${newMember.name} created successfully!`);
+        }
       }
+      hideDialog();
     } catch (error) {
-      console.error("Error creating member:", error);
+      console.error("Error saving member:", error);
       toast.error(
-        "An error occurred while creating the member. Please try again."
+        `An error occurred while ${
+          isEdit ? "updating" : "creating"
+        } the member. Please try again.`
       );
     }
   };
 
-  const handleSearch = () => {};
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+  };
+
+  const filteredMembers = members.filter((member) => {
+    return (
+      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
+  const handleDeleteMember = async (memberId) => {
+    if (!memberId) {
+      toast.error("Member ID is required to delete a member.");
+      return;
+    }
+
+    try {
+      await deleteMember(memberId);
+      toast.success(`Member ${memberId} deleted successfully.`);
+      fetchMembers();
+    } catch (error) {
+      console.error("Error deleting member:", error);
+      toast.error(
+        `Failed to delete member ${memberId}. ${
+          error?.response?.data?.message || error.message
+        }`
+      );
+    }
+  };
 
   useEffect(() => {
     fetchMembers();
@@ -127,7 +201,7 @@ const Members = () => {
             <Search onSearchChange={handleSearch} />
             <div>
               <Button
-                onClick={showDialog}
+                onClick={() => showDialog("create")}
                 className="rounded-md p-1 text-white text-sm gap-2 md:p-2 bg-[#0C8003]"
               >
                 <i className="pi pi-plus"></i>
@@ -148,13 +222,14 @@ const Members = () => {
           scrollable
           scrollHeight="280px"
           emptyMessage="No Members found."
-          value={members}
+          value={filteredMembers}
         >
-          <Column field="name" header="Full Name" />
-          <Column field="email" header="Email" />
-          <Column field="dob" header="Date of Birth" />
+          <Column field="name" sortable  header="Full Name" />
+          <Column field="email" sortable  header="Email" />
+          <Column field="dob" sortable  header="Date of Birth" />
           <Column
             field="createdAt"
+            sortable 
             header="Created Date"
             body={(rowData) => formatDate(rowData.createdAt)}
           />
@@ -178,12 +253,28 @@ const Members = () => {
               />
             )}
           />
+          <Column
+            field="Action"
+            header="Actions"
+            body={(rowData) => (
+              <div className="flex items-center gap-3">
+                <GoPencil
+                  className="text-gray-500 cursor-pointer"
+                  onClick={() => showDialog("edit", rowData)}
+                />
+                <FaTrash
+                  className="text-red-500 cursor-pointer"
+                  onClick={() => handleDeleteMember(rowData.id)}
+                />
+              </div>
+            )}
+          />
         </DataTable>
 
         <Dialog
-          visible={dialogVisible}
+          visible={isDialogVisible}
           onHide={hideDialog}
-          header="Create New Member"
+          header={isEdit ? "Edit Member" : "Create Member"}
           modal
           draggable
           headerClassName="border-b border-gray-300 p-2 font-semibold"
@@ -234,7 +325,7 @@ const Members = () => {
                 </div>
 
                 <div className="flex justify-between gap-2">
-                  <div className="w-1/2">
+                  <div className="w-1/2 relative">
                     <label
                       htmlFor="dob"
                       className="text-left text-xs font-medium text-gray-600"
@@ -250,7 +341,8 @@ const Members = () => {
                       }
                       showIcon
                       dateFormat="yy-mm-dd"
-                      className="w-full px-3 py-2 border-[#efefef] rounded-md my-4 outline-[#eeeeee] bg-[#e9eaeb] z-100"
+                      className="w-full px-3 py-2  rounded-md my-4 bg-[#e9eaeb]"
+                      panelClassName="z-50 bg-white"
                     />
                   </div>
                   <div className="w-1/2">
@@ -262,7 +354,7 @@ const Members = () => {
                     </label>
                     <Dropdown
                       id="roleId"
-                      value={newMember.roleId}
+                      value={newMember.roleId || ""}
                       options={roles.map((role) => ({
                         label: role.name,
                         value: role.id,
@@ -294,10 +386,10 @@ const Members = () => {
             </div>
           </div>
           <button
-            onClick={handleCreateMember}
+            onClick={handleSaveMember}
             className="w-full rounded-md px-10 md:p-2 bg-[#248E1D] text-white font-thin"
           >
-            Create Member
+            {isEdit ? "Update Member" : "Create Member"}
           </button>
         </Dialog>
       </div>

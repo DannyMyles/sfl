@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import "../src/assets/global.scss"
+import 'primeicons/primeicons.css';
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 

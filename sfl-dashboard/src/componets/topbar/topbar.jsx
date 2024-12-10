@@ -12,7 +12,6 @@ const TopBar = () => {
   const { user, logout } = useContext(AuthContext);
   const [profileOpen, setProfileOpen] = useState(false);
 
-  console.log("userr in topbar ->>>>>>", user)
   const goToSetting = () => {
     console.log("Go to Settings");
     navigate("/settings");
@@ -33,6 +32,7 @@ const TopBar = () => {
   const hideProfileModal = () => setProfileOpen(false);
 
   return (
+    <>
     <div className="topbar__container border-b bg-white flex justify-end w-full top-0">
       <Toaster position="top-right" richColors closeButton />
       <div className="flex items-center gap-1 ml-auto mx-2">
@@ -63,6 +63,8 @@ const TopBar = () => {
 
       <Profile dialogVisible={profileOpen} hideDialog={hideProfileModal} />
     </div>
+    
+    </>
   );
 };
 

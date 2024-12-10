@@ -13,7 +13,6 @@ export const accReg = async (data) => {
 export const accLogin = async (data) => {  
   try {
     const response = await baseAxiosClient.post("/auth/login", data);
-    console.log("Login response", response)
     return response;
   } catch (error) {
     throw error;
@@ -100,24 +99,32 @@ export const getMemberById = async () => {
   }
 };
 
-export const updateMember= async (userId, data) => {
+export const updateMember = async (userId, data) => {
   try {
     const response = await baseAxiosClient.put(`/members/${userId}`, data);
-    return response;
+    return response.data; 
   } catch (error) {
-    throw error;
+    console.error("Error updating member:", error.response || error.message || error);
+    throw new Error(error.response?.data?.message || "An error occurred while updating the member.");
   }
 }
 
 
-export const deleteMember = async () => {
+
+export const deleteMember = async (memberId) => {
   try {
-    const response = await baseAxiosClient.get("/members");
-    return response;
+    if (!memberId) {
+      throw new Error("Member ID is required to delete a member.");
+    }
+    
+    const response = await baseAxiosClient.delete(`/members/${memberId}`);
+    return response.data;
   } catch (error) {
+    console.error("Error deleting member:", error?.response?.data || error.message);
     throw error;
   }
 };
+
 
 
 // Role Management Handlers

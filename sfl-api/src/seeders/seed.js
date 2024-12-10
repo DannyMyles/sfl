@@ -9,8 +9,8 @@ const seedDatabase = async () => {
     await ActivityLog.sync({ force: true });
 
     const roles =  await Role.bulkCreate([
-      { id: 1, name: "Admin" },
-      { id: 2, name: "User" },
+      { id: 1, name: "admin" },
+      { id: 2, name: "user" },
     ]);
 
     const hashedPassword1 = await bcrypt.hash("password123", 10);
@@ -35,17 +35,17 @@ const seedDatabase = async () => {
 
     const members = await Member.bulkCreate([
       {
-        name: "John",
+        name: "Brian Gathua",
         email: "gathua@gmail.com",
         dob: "1990-01-01",
-        profilePicture: "profile_brian.jpg",
+        profilePicture: "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         userId: users[0].id,
       },
       {
-        name: "Mary SS",
-        email: "jane@gmail.com",
+        name: "Mary Symons",
+        email: "marysymons@gmail.com",
         dob: "1985-05-15",
-        profilePicture: "profile_mary.jpg",
+        profilePicture: "https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         userId: users[1].id,
       },
     ]);

@@ -7,7 +7,9 @@ import { accReg } from "../../api/apiService";
 import { AuthContext } from "../../context/AuthContext";
 
 const Registration = () => {
-  const { login, error, loading } = useContext(AuthContext);
+  const { login, error } = useContext(AuthContext);
+  const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -16,10 +18,9 @@ const Registration = () => {
     password: "",
   });
 
-
   const roles = [
-    { label: "Admin", value: 1 },
-    { label: "User", value: 2 },
+    { label: "admin", value: 1 },
+    { label: "user", value: 2 },
   ];
   const navigate = useNavigate();
   const handleChange = (event) => {
@@ -29,27 +30,32 @@ const Registration = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const payload = {
+      name: formData.name,
+      email: formData.email,
+      username: formData.username,
+      password: formData.password,
+      roleId: formData.role,
+    };
+  
     try {
-      const payload = {
-        name: formData.name,
-        email: formData.email,
-        username: formData.username, 
-        password: formData.password,
-        roleId: formData.role,
-      };
-
+      setLoading(true); // Show spinner
       const resp = await accReg(payload);
-      const user = resp.data.user;
-      await login(user);
-      console.log("registration response: ", user);
-      toast.success("Registration successful!");
-      navigate("/sfl/dashboard");
+  
+      if (resp.status === 201) {
+        const user = resp.data.user;
+        await login(user);
+        toast.success(resp.data.message);
+        navigate("/sfl/dashboard");
+      }
     } catch (error) {
-      console.error("Registration error:", error);
-      toast.error("An error occurred during registration");
+      console.error("Registration error:", error.message);
+      toast.error(error.message);
+    } finally {
+      setLoading(false); // Hide spinner
     }
   };
-
+  
   return (
     <div className="flex flex-col md:flex-row h-screen">
       <Toaster position="top-right" richColors closeButton />
@@ -148,7 +154,7 @@ const Registration = () => {
                       setFormData({ ...formData, role: e.value })
                     }
                     placeholder="Select a role"
-                    className="my-2"
+                    className="p-2 border-[#efefef] rounded-md my-2 outline-[#eeeeee] bg-[#e9eaeb]"
                   />
                 </label>
               </div>
@@ -156,7 +162,7 @@ const Registration = () => {
             <button
               type="submit"
               className="p-2 bg-[#248E1D] text-white rounded"
-              disabled={loading}
+              disabled={loading} 
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">

@@ -10,7 +10,7 @@ router.route('/members')
     .get(authenticateUser, getAllMembers);
 
 router.route('/members/:id')
-    .put(authenticateUser, updateMember)
+.put(authenticateUser, upload.single('file'), updateMember)
     .delete(authenticateUser, deleteMember);
 
 module.exports = router;

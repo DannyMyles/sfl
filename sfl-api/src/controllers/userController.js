@@ -6,15 +6,41 @@ const HTTP_STATUS_CODES = require("../utils/statusCodes");
 const createUser = asyncWrapper(async (req, res, next) => {
     const { name, username, email, password, roleId } = req.body;
 
-    // Check if the role exists
-    const role = await Role.findByPk(roleId);
-    if (!role) {
-        return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ error: "Invalid role ID" });
-    }
+    try {
+        // Check if the role exists
+        const role = await Role.findByPk(roleId);
+        if (!role) {
+            return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ error: "Invalid role ID" });
+        }
 
-    const newUser = await User.create({ name, username, email, password, roleId });
-    return res.status(HTTP_STATUS_CODES.CREATED).json(newUser);
+        // Check for duplicate email or username
+        const existingUser = await User.findOne({
+            where: {
+                [Sequelize.Op.or]: [
+                    { email: email },
+                    { username: username }
+                ]
+            }
+        });
+
+        if (existingUser) {
+            return res.status(HTTP_STATUS_CODES.CONFLICT).json({
+                error: "A user with the same email or username already exists"
+            });
+        }
+
+        // Create new user
+        const newUser = await User.create({ name, username, email, password, roleId });
+        return res.status(HTTP_STATUS_CODES.CREATED).json(newUser);
+    } catch (err) {
+        if (err.name === 'SequelizeValidationError') {
+            const errors = err.errors.map(error => error.message);
+            return res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ errors });
+        }
+        next(err);
+    }
 });
+
 
 
 // Get all users
