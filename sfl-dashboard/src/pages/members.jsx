@@ -137,12 +137,14 @@ const Members = () => {
           );
           toast.success(`${newMember.name} updated successfully!`);
         }
+      fetchMembers();
       } else {
         const response = await createMember(formData);
         if (response.status === 201) {
           setMembers([...members, response.data]);
           toast.success(`${newMember.name} created successfully!`);
         }
+      fetchMembers();
       }
       hideDialog();
     } catch (error) {
